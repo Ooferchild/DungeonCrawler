@@ -279,8 +279,16 @@ while True:
             dungeon()
             break
     elif choice == "2":
-        db = shelve.open("DungeonCrawl")
-        character = db["character"]
+        with shelve.open("DungeonCrawl") as db:
+            if "character" not in db:
+                print()
+                print("Character data not found")
+                continue
+            else:
+                print()
+                print("Loading character data")
+                print()1
+                character = db["character"]
         db.close()
         dungeon()
         break
