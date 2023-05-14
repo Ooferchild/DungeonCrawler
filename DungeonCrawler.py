@@ -287,7 +287,7 @@ while True:
             else:
                 print()
                 print("Loading character data")
-                print()1
+                print()
                 character = db["character"]
         db.close()
         dungeon()
