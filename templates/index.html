@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dungeon Crawler</title>
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .container {
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            font-size: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .start-button {
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .start-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Welcome to Dungeon Crawler</h1>
+        <p>Prepare yourself for an epic adventure!</p>
+        <button class="create-button" onclick="createChar()">Create new character</button>
+        <button class="start-button" onclick="startGame()">Start Game</button>
+    </div>
+
+    <script>
+        function startGame() {
+            window.location.href = "/dungeon";
+        }
+
+        function createChar() {
+            window.location.href = "/create";
+        }
+    </script>
+</body>
+
+</html>

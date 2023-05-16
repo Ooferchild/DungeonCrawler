@@ -1,11 +1,23 @@
-import shelve
 import os
-from azure.cosmos import CosmosClient
 import random
+import shelve
+
+from azure.cosmos import CosmosClient
+from dotenv import load_dotenv
+from flask import Flask, redirect, render_template, request, url_for
+
+# Initialize the Cosmos DB client
+load_dotenv()
+app = Flask(__name__)
+
 
 def get_cosmos_client():
     connection_string = os.getenv('PRIMARY_CONNECTION_STRING')
-    return CosmosClient.from_connection_string(connection_string)
+    return CosmosClient.from_connection_string(f"{connection_string}")
+
+database = 'DungeonCrawler'
+container = 'Character'
+
 
 def loot_table():
     items = [
@@ -24,16 +36,32 @@ def loot_table():
 def characterCreate():
     name = input("What is your name? ")
     print("You can be a Knight(+5 def), Fighter(+5 str), or Rogue (+5 dex).")
-    Class = input("What class would you like to be? ")
-    if Class.lower() == "knight":
-        character = {"name": name, "class": "Knight", "health": 100, "dexterity": 0, "strength": 0, "defense": 5, "inventory": []}
-    elif Class.lower() == "fighter":
-        character = {"name": name, "class": "Fighter", "health": 100, "dexterity": 0, "strength": 5, "defense": 0, "inventory": []}
-    elif Class.lower() == "rogue":
-        character = {"name": name, "class": "Rogue", "health": 100, "dexterity": 5, "strength": 0, "defense": 0, "inventory": []}
+    char_class = input("What class would you like to be? ")
+    
+    character = {
+        "name": name,
+        "class": char_class,
+        "health": 100,
+        "dexterity": 0,
+        "strength": 0,
+        "defense": 0,
+        "inventory": []
+    }
+    
+    if char_class.lower() == "knight":
+        character["defense"] = 5
+    elif char_class.lower() == "fighter":
+        character["strength"] = 5
+    elif char_class.lower() == "rogue":
+        character["dexterity"] = 5
     else:
         print("Invalid class")
         return None
+    
+    client = get_cosmos_client()
+    container = client.get_database_client(database).get_container_client(container)
+    container.create_item(body=character)
+    
     return character
 
 def characterStats(character):
@@ -102,19 +130,27 @@ def characterInventory(character):
             print("You drink the Potion. Your health is now", character["health"])
             if character["health"] > 100:
                 character["health"] = 100
+        elif choice == "":
+            return
         else:
             print("You cannot use that item.")
+        
+        # Update character document in the database
+        client = get_cosmos_client()
+        container = client.get_database_client(database).get_container_client(container)
+        container.upsert_item(body=character)
     else:
         print("You do not have that item.")
 
 
 def characterSave(character):
-    db = shelve.open("DungeonCrawl")
-    db["character"] = character
-    db.close()
+    client = get_cosmos_client()
+    container = client.get_database_client(database).get_container_client(container)
+    container.upsert_item(body=character)
     print("Character saved")
 
-def dungeon():
+
+def dungeon(character):
     turns = 0
     
     events = [
@@ -144,6 +180,7 @@ def dungeon():
         elif choice.lower() == "inventory":
             characterInventory(character)
             continue
+
 def chest():    
     item = loot_table()
     
@@ -269,38 +306,23 @@ def battle():
         # Increment turn counter
         turn += 1
 
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-while True:
-    print("Welcome to Dungeon Crawler!")
-    print("1. Create Character")
-    print("2. Load Character")
-    print("3. Exit")
-    choice = input("What would you like to do? ")
-    if choice == "1":
-        character = characterCreate()
-        if character is not None:
-            character = characterStats(character)
-            characterInventory(character)
-            characterSave(character)
-            dungeon()
-            break
-    elif choice == "2":
-        with shelve.open("DungeonCrawl") as db:
-            if "character" not in db:
-                print()
-                print("Character data not found")
-                continue
-            else:
-                print()
-                print("Loading character data")
-                print()
-                character = db["character"]
-        db.close()
-        dungeon()
-        break
-    elif choice == "3":
-        print("Thank you for playing!")
-        break
-    else:
-        print("Invalid input")
+@app.route("/create", methods=["POST"])
+def create():
+    name = request.form["name"]
+    character_class = request.form["class"]
+    character = characterCreate()
+    
+    # Return some response indicating success or failure
+    return render_template("character.html", character=character)
 
+@app.route("/dungeon", methods=["POST"])
+def dungeon_route():
+    character = characterCreate()
+    dungeon(character)
+
+if __name__ == "__main__":
+    app.run(debug=True)
