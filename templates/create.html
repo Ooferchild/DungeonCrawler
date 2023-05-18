@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>L&L - Create Character</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='../static/style.css') }}">
+</head>
+
+<body>
+    <h1>Create Your Character</h1>
+    <div class="wrapper">
+
+        <form action="/create" method="post">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <br>
+            <label for="class">Class:</label>
+            <select id="class" name="class" required>
+                <option value="knight">Knight</option>
+                <option value="fighter">Fighter</option>
+                <option value="rogue">Rogue</option>
+            </select>
+            <br>
+            <input type="submit" class="create_character" value="Create Character">
+        </form>
+    </div>
+</body>
+
+</html>

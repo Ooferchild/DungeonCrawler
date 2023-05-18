@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>L&L - Dungeon</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='../static/style.css') }}">
+</head>
+
+<body>
+    <h1>Welcome to the Dungeon, {{ character['name'] }}!</h1>
+    <p>Class: {{ character['class'] }}</p>
+    <p>Health: {{ character['health'] }}</p>
+    <p>Strength: {{ character['strength'] }}</p>
+    <p>Dexterity: {{ character['dexterity'] }}</p>
+    <p>Defense: {{ character['defense'] }}</p>
+
+    <!-- Add more HTML content for the dungeon experience -->
+
+    <a class="button" href="/inventory">Inventory</a>
+</body>
+
+</html>

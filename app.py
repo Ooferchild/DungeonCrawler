@@ -13,7 +13,12 @@ app = Flask(__name__)
 
 def get_cosmos_client():
     connection_string = os.getenv('PRIMARY_CONNECTION_STRING')
-    return CosmosClient.from_connection_string(f"{connection_string}")
+    endpoint_url = connection_string.split(';')[0].split('=')[1]
+    return CosmosClient.from_connection_string(f"{endpoint_url}")
+
+
+connection_string = os.getenv('PRIMARY_CONNECTION_STRING')
+endpoint_url = connection_string.split(';')[0].split('=')[1]
 
 database = 'DungeonCrawler'
 container = 'Character'
@@ -33,36 +38,7 @@ def loot_table():
     return random.choices(items, [weight for _, weight, _ in items])[0]
 
 
-def characterCreate():
-    name = input("What is your name? ")
-    print("You can be a Knight(+5 def), Fighter(+5 str), or Rogue (+5 dex).")
-    char_class = input("What class would you like to be? ")
-    
-    character = {
-        "name": name,
-        "class": char_class,
-        "health": 100,
-        "dexterity": 0,
-        "strength": 0,
-        "defense": 0,
-        "inventory": []
-    }
-    
-    if char_class.lower() == "knight":
-        character["defense"] = 5
-    elif char_class.lower() == "fighter":
-        character["strength"] = 5
-    elif char_class.lower() == "rogue":
-        character["dexterity"] = 5
-    else:
-        print("Invalid class")
-        return None
-    
-    client = get_cosmos_client()
-    container = client.get_database_client(database).get_container_client(container)
-    container.create_item(body=character)
-    
-    return character
+
 
 def characterStats(character):
     print("You will roll 3 dice to determine your stats.")
@@ -145,8 +121,9 @@ def characterInventory(character):
 
 def characterSave(character):
     client = get_cosmos_client()
-    container = client.get_database_client(database).get_container_client(container)
-    container.upsert_item(body=character)
+    container = client.get_database_client(database)
+    container = database.get_container_client(container)
+    container.create_item(body=character)
     print("Character saved")
 
 
@@ -159,17 +136,18 @@ def dungeon(character):
         ("You stumble upon a hidden passage.", 0.2)
     ]
     
+    output = ""
+    
     while True:
         turns += 1
         
         event = random.choices(events, [weight for _, weight in events])[0]
-        
-        print(event[0])
+        output += event[0] + "<br>"
         
         if "treasure chest" in event[0]:
-            chest()
+            output += chest() + "<br>"
         elif "monster" in event[0]:
-            battle()
+            output += battle() + "<br>"
         elif "hidden passage" in event[0]:
             # Generate a random puzzle or secret room
             pass
@@ -178,8 +156,10 @@ def dungeon(character):
         if choice.lower() != "continue" and choice.lower() != "inventory":
             break
         elif choice.lower() == "inventory":
-            characterInventory(character)
-            continue
+            output += characterInventory(character) + "<br>"
+    
+    return output
+
 
 def chest():    
     item = loot_table()
@@ -310,19 +290,54 @@ def battle():
 def index():
     return render_template("index.html")
 
-@app.route("/create", methods=["POST"])
-def create():
-    name = request.form["name"]
-    character_class = request.form["class"]
-    character = characterCreate()
-    
-    # Return some response indicating success or failure
-    return render_template("character.html", character=character)
-
-@app.route("/dungeon", methods=["POST"])
+@app.route("/dungeon", methods=["GET", "POST"])
 def dungeon_route():
     character = characterCreate()
     dungeon(character)
+
+@app.route("/create", methods=["GET", "POST"])
+def create_character():
+    if request.method == "POST":
+        name = request.form.get("name")
+        char_class = request.form.get("class")
+
+        if name and char_class:
+            character = characterCreate(name, char_class)
+            return render_template("dungeon.html", character=character)
+        else:
+            return "Please enter a valid name and class."
+
+    return render_template("create.html")
+
+
+def characterCreate(name=None, char_class=None):
+    if not name or not char_class:
+        return None
+
+    character = {
+        "name": name,
+        "class": char_class,
+        "health": 100,
+        "dexterity": 0,
+        "strength": 0,
+        "defense": 0,
+        "inventory": []
+    }
+
+    if char_class.lower() == "knight":
+        character["defense"] = 5
+    elif char_class.lower() == "fighter":
+        character["strength"] = 5
+    elif char_class.lower() == "rogue":
+        character["dexterity"] = 5
+    else:
+        print("Invalid class")
+        return None
+
+    characterSave(character)
+
+    return character
+
 
 if __name__ == "__main__":
     app.run(debug=True)
