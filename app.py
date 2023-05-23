@@ -12,13 +12,8 @@ app = Flask(__name__)
 
 
 def get_cosmos_client():
-    connection_string = os.getenv('PRIMARY_CONNECTION_STRING')
-    endpoint_url = connection_string.split(';')[0].split('=')[1]
-    return CosmosClient.from_connection_string(f"{endpoint_url}")
+    return CosmosClient(url=os.getenv('ENDPOINT_URI'), credential=os.getenv('PRIMARY_KEY'))
 
-
-connection_string = os.getenv('PRIMARY_CONNECTION_STRING')
-endpoint_url = connection_string.split(';')[0].split('=')[1]
 
 database = 'DungeonCrawler'
 container = 'Character'
@@ -112,18 +107,14 @@ def characterInventory(character):
             print("You cannot use that item.")
         
         # Update character document in the database
-        client = get_cosmos_client()
-        container = client.get_database_client(database).get_container_client(container)
-        container.upsert_item(body=character)
+
     else:
         print("You do not have that item.")
 
 
 def characterSave(character):
     client = get_cosmos_client()
-    container = client.get_database_client(database)
-    container = database.get_container_client(container)
-    container.create_item(body=character)
+    client.create_item(body=character)
     print("Character saved")
 
 
@@ -165,13 +156,8 @@ def chest():
     item = loot_table()
     
     print("You found a", item, "in the chest!")
-    
-    with shelve.open("DungeonCrawl") as db:
-        if "inventory" not in db:
-            character["inventory"] = []
-        
-        character["inventory"].append(item)
-    
+    #append item to inventory
+
     return item
 
 def puzzle():
@@ -197,11 +183,6 @@ def puzzle():
             print("Congratulations, you solved the puzzle!")
             item = random.choices(loot, [weight for _, weight in loot])[0][0]
             print("You open the door and find a", item, "!")
-            with shelve.open("DungeonCrawl") as db:
-                if "inventory" not in db:
-                    character["inventory"] = []
-                
-                character["inventory"].append(item)
             return
         else:
             print("Incorrect, try again.")
@@ -311,9 +292,6 @@ def create_character():
 
 
 def characterCreate(name=None, char_class=None):
-    if not name or not char_class:
-        return None
-
     character = {
         "name": name,
         "class": char_class,
@@ -325,19 +303,15 @@ def characterCreate(name=None, char_class=None):
     }
 
     if char_class.lower() == "knight":
-        character["defense"] = 5
+        character["defense"] += 5
     elif char_class.lower() == "fighter":
-        character["strength"] = 5
+        character["strength"] += 5
     elif char_class.lower() == "rogue":
-        character["dexterity"] = 5
-    else:
-        print("Invalid class")
-        return None
+        character["dexterity"] += 5
 
     characterSave(character)
 
     return character
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+app.run(debug=True, use_reloader=False)
