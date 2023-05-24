@@ -10,14 +10,8 @@ from flask import Flask, redirect, render_template, request, url_for
 load_dotenv()
 app = Flask(__name__)
 
-
 def get_cosmos_client():
     return CosmosClient(url=os.getenv('ENDPOINT_URI'), credential=os.getenv('PRIMARY_KEY'))
-
-
-database = 'DungeonCrawler'
-container = 'Character'
-
 
 def loot_table():
     items = [
@@ -32,14 +26,26 @@ def loot_table():
     ]
     return random.choices(items, [weight for _, weight, _ in items])[0]
 
+def monsters(name, health, strength, defense, dexterity):
+    level1 = [
+        {name : "goblin", health : 10, strength : 5, defense : 5, dexterity : 5},
+        {name : "orc", health : 15, strength : 10, defense : 10, dexterity : 10},
+        {name : "skeleton", health : 20, strength : 15, defense : 15, dexterity : 15},
+        {name : "zombie", health : 25, strength : 20, defense : 20, dexterity : 20},
+    ]
 
+    level2 = [
+        {name : "golem", health : 50, strength : 15, defense : 15, dexterity : 15},
+        {name : "troll", health : 75, strength : 20, defense : 20, dexterity : 20},
+    ]
 
+    boss = [{name : "dragon", health : 150, strength : 25, defense : 25, dexterity : 25}]
 
 def characterStats(character):
     print("You will roll 3 dice to determine your stats.")
-    dexterity = random.randint(1,20)
-    strength = random.randint(1,20)
-    defense = random.randint(1,20)
+    dexterity = random.randint(4,20)
+    strength = random.randint(4,20)
+    defense = random.randint(4,20)
     print("Your dexterity is:", dexterity)
     print("Your strength is:", strength)
     print("Your defense is:", defense)
@@ -114,7 +120,9 @@ def characterInventory(character):
 
 def characterSave(character):
     client = get_cosmos_client()
-    client.create_item(body=character)
+    database = client.get_database_client("Dungeon")
+    container = database.get_container_client("Character")
+    container.upsert_item(character)
     print("Character saved")
 
 
