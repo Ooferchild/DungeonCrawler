@@ -3,20 +3,35 @@
 
 <head>
     <title>L&L - Dungeon</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='../static/style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='../static/dungeon.css') }}">
 </head>
 
 <body>
-    <h1>Welcome to the Dungeon, {{ character['name'] }}!</h1>
-    <p>Class: {{ character['class'] }}</p>
-    <p>Health: {{ character['health'] }}</p>
-    <p>Strength: {{ character['strength'] }}</p>
-    <p>Dexterity: {{ character['dexterity'] }}</p>
-    <p>Defense: {{ character['defense'] }}</p>
+<header>
+    <h2>L&L - Dungeon</h2>
+</header>
 
-    <!-- Add more HTML content for the dungeon experience -->
+<div class="column">
+    <div class="info">
+        <h3>Info</h3>
+        <p>Level: {{ level }}</p>
+        <p>Health: {{ health }}</p>
+        <p>Attack: {{ attack }}</p>
+        <p>Defense: {{ defense }}</p>
+        <p>Gold: {{ gold }}</p>
+        <p>Experience: {{ experience }}</p>
+        <p>Next Level: {{ next_level }}</p>
+    </div>
+    <div class="dungeon">
+        <h3>Dungeon</h3>
+        <p>{{ dungeon }}</p>
+    </div>
+    <div class="inventory">
+        <h3>Inventory</h3>
+        <p>{{ inventory }}</p>
+    </div>
+</div>
 
-    <a class="button" href="/inventory">Inventory</a>
 </body>
 
 </html>

@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #07043d;
+    font-family: 'MedievalSharp', cursive;
+    position: relative;
+    overflow: hidden;
+    color: #ffffff;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to bottom right, #07043d, #000000);
+    opacity: 0.8;
+    z-index: -1;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 50%, transparent 50%), linear-gradient(rgba(255, 255, 255, 0.1) 50%, transparent 50%);
+    background-size: 30px 30px;
+    opacity: 0.3;
+    z-index: -1;
+}
+
+.header {
+  grid-area: header;
+  background-color: #f1f1f1;
+  padding: 30px;
+  text-align: center;
+  vertical-align: top;
+  font-size: 35px;
+}
+
+.column {
+  grid-area: column;
+  background-color: #f1f1f1;
+  padding: 30px;
+  text-align: center;
+  vertical-align: top;
+  font-size: 35px;
+}
+
+.wrapper {
+    position: relative;
+    width: 400px;
+    height: 240px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

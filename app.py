@@ -236,7 +236,10 @@ def battle(character):
             defense_value = random.randint(1, character["defense"])
             print("You defend for", defense_value, "damage!")
         elif choice.lower() == "heal":
-            heal_value = 10
+            heal_value = 0
+            for i in range(4):
+                roll = random.randint(1, 6)
+                heal_value += roll
             character["health"] += heal_value
             if character["health"] > 100:
                 character["health"] = 100
@@ -324,11 +327,6 @@ def characterCreate(name, char_class):
         character["strength"] += 5
     elif char_class.lower() == "rogue":
         character["dexterity"] += 5
-
-    client = get_cosmos_client()
-    database = client.get_database_client("Dungeon")
-    container = database.get_container_client("Character")
-    container.upsert_item(character)
 
     return character
 
